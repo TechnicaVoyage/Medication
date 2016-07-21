@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Medication</string>
+    <string name="medicine">Enter your medications</string>
+    <string name="duration">Enter cycle duration(days)</string>
+    <string name="cooldown">Enter cooldown duration(days)</string>
+    <string name="repeat">Repeat</string>
+    <string name="OK">OK</string>
+    <string name="reset">Reset</string>
+</resources>
