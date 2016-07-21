@@ -1,7 +1,8 @@
 package com.technicavoyage.medication;
 
-import android.app.Notification;
-import android.app.NotificationManager;
+//import android.app.Notification;
+//import android.app.NotificationManager;
+
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
@@ -15,12 +16,13 @@ import android.os.Message;
 import android.os.Process;
 import android.preference.PreferenceManager;
 import android.provider.AlarmClock;
+import android.widget.Toast;
 
 /**
- * Created by Dhaval Srivastava on 21-Jul-16.
+ * Created by TechnicaVoyage on 21-Jul-16.
  */
 public class MedServiceNotification extends Service {
-    private NotificationManager mNM;
+    //  private NotificationManager mNM;
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
 
@@ -39,43 +41,39 @@ public class MedServiceNotification extends Service {
         @Override
         public void handleMessage(Message msg) {
             // Normally we would do some work here, like download a file.
-            // For our sample, we just sleep for 5 seconds.
-            try {
-                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                int hour = sp.getInt("hour", 22);
-                int minutes = sp.getInt("minutes", 0);
-                int durationV = sp.getInt("durationV", 1);
-                int dur = sp.getInt("dur", 0);
-                int cdrV = sp.getInt("cdrV", 1);
-                int cd = sp.getInt("cd", 0);
-                if (dur != durationV && cd != cdrV) {       //for 21st day: Dur==durationV, for cd: cd==cdrV,
-                    cd = 0;                                                     //for 1st day: durationV!=1
-                    Intent alarmFinal = new Intent(AlarmClock.ACTION_SET_ALARM);
-                    alarmFinal.putExtra(AlarmClock.EXTRA_HOUR, hour);
-                    alarmFinal.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    alarmFinal.putExtra(AlarmClock.EXTRA_MINUTES, minutes);
-                    alarmFinal.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
-                    startActivity(alarmFinal);
-                    dur++;
-                    showNotification(dur);
-                } else {
-                    cd++;
-                    if (cd == cdrV) {
-                        dur = 0;
-                        cd = 0;
-                    }
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String name = sp.getString("medName", "Medication");
+            int hour = sp.getInt("hour", 22);
+            int minutes = sp.getInt("minutes", 0);
+            int durationV = sp.getInt("durationV", 1);
+            int dur = sp.getInt("dur", 0);
+            int cdrV = sp.getInt("cdrV", 1);
+            int cd = sp.getInt("cd", 0);
+            if (dur != durationV && cd != cdrV) {       //for 21st day: Dur==durationV, for cd: cd==cdrV,
+                cd = 0;                                                     //for 1st day: durationV!=1
+                Intent alarmFinal = new Intent(AlarmClock.ACTION_SET_ALARM);
+                alarmFinal.putExtra(AlarmClock.EXTRA_HOUR, hour);
+                alarmFinal.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                alarmFinal.putExtra(AlarmClock.EXTRA_MESSAGE, "Take " + name);
+                alarmFinal.putExtra(AlarmClock.EXTRA_MINUTES, minutes);
+                alarmFinal.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
+                startActivity(alarmFinal);
+                dur++;
+                Toast.makeText(getApplicationContext(), "AlarmSet! "+dur, Toast.LENGTH_SHORT).show();
+                //showNotification(dur);
+            } else {
+                cd++;
+                if (cd == cdrV) {
+                    dur = 0;
+                    cd = 0;
                 }
-                SharedPreferences.Editor e = sp.edit();
-                e.putInt("cd", cd);
-                e.putInt("dur", dur);
-                e.apply();
-            } catch (SecurityException e) {
-                // Restore interrupt status.
-                Thread.currentThread().interrupt();
             }
+            SharedPreferences.Editor e = sp.edit();
+            e.putInt("cd", cd);
+            e.putInt("dur", dur);
+            e.apply();
             // Stop the service using the startId, so that we don't stop
             // the service in the middle of handling another job
-            stopSelf(msg.arg1);
         }
     }
 
@@ -92,13 +90,13 @@ public class MedServiceNotification extends Service {
         // separate thread because the service normally runs in the process's
         // main thread, which we don't want to block.  We also make it
         // background priority so CPU-intensive work will not disrupt our UI.
-        HandlerThread thread = new HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND);
+        HandlerThread thread = new HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_DEFAULT);
         thread.start();
 
         // Get the HandlerThread's Looper and use it for our Handler
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
-        mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        //    mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         // Display a notification about us starting.  We put an icon in the status bar.
 
@@ -128,18 +126,18 @@ public class MedServiceNotification extends Service {
     /**
      * Show a notification while this service is running.
      */
-    private void showNotification(int dur) {
-        // The PendingIntent to launch our activity if the user selects this notification
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
-        // Set the info for the views that show in the notification panel.
-        Notification notification = new Notification.Builder(this)
+    //private void showNotification(int dur) {
+    // The PendingIntent to launch our activity if the user selects this notification
+    //PendingIntent contentIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
+    // Set the info for the views that show in the notification panel.
+        /*Notification notification = new Notification.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)  // the status icon
                 .setPriority(Notification.PRIORITY_MAX)
                 .setContentText("Alarm Set! " + dur)// the status text
                 .setContentTitle("Medication")  // the label of the entry.setContentText("text")  // the contents of the entry
                 .setContentIntent(contentIntent).build();  // The intent to send when the entry is clicked
         // Send the notification.
-        mNM.notify(7, notification);
-    }
+        mNM.notify(7, notification);*/
+    //}
 }
 

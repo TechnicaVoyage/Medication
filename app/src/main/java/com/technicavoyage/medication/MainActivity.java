@@ -54,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
         durationV = sp.getInt("durationV", 1);
         cdV = sp.getInt("cdrV", 1);
         repeat.setChecked(sp.getBoolean("repeat", false));
-        hour = sp.getInt("hour", Calendar.HOUR);
+        hour = sp.getInt("hour", cal.getInstance().get(Calendar.HOUR));
         timePicker.setCurrentHour(hour);
-        minutes = sp.getInt("minutes", Calendar.MINUTE);
+        minutes = sp.getInt("minutes", cal.getInstance().get(Calendar.MINUTE));
         timePicker.setCurrentMinute(minutes);
         duration.setValue(durationV);
         cdr.setValue(cdV);
@@ -89,16 +89,18 @@ public class MainActivity extends AppCompatActivity {
                 hour = timePicker.getCurrentHour();
                 minutes = timePicker.getCurrentMinute();
                 int nextDay = 0; //If time selected has already passed
-                if (hour <= Calendar.DATE && minutes <= Calendar.MINUTE) {
-                    nextDay++;
-                }
                 cal = Calendar.getInstance();
-                cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DATE) + nextDay, hour, minutes + 1, 0); //plus 1 for the second alarmManager second time opening
+                if (hour - cal.get(Calendar.HOUR) > 0 || (cal.get(Calendar.HOUR) == 0 && minutes <= cal.get(Calendar.MINUTE))) {
+                    nextDay++;
+                    cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DATE) + nextDay, cal.get(hour), cal.get(minutes), 0);
+                } else
+                    cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DATE), hour, minutes, 0);
                 Intent intentMed = new Intent(getApplicationContext(), MedAppReceiver.class);
                 PendingIntent pIntentMed = PendingIntent.getBroadcast(getApplicationContext(), 7, intentMed, PendingIntent.FLAG_UPDATE_CURRENT);
                 Toast.makeText(MainActivity.this, cal.getTimeInMillis() + "", Toast.LENGTH_SHORT).show();
                 AlarmManager alarmMgr = (AlarmManager) getSystemService(ALARM_SERVICE);
-                alarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 180000, pIntentMed);
+                alarmMgr.set(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), pIntentMed);
+                alarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 86400000, pIntentMed);
                 savePrefs(mName, durationV, cdV, repeat.isChecked(), hour, minutes);
             }
         });
