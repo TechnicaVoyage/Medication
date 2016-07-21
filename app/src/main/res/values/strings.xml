@@ -6,4 +6,6 @@
     <string name="repeat">Repeat</string>
     <string name="OK">OK</string>
     <string name="reset">Reset</string>
+    <string name="versionName">beta</string>
+    <string name="versionCode">0.1</string>
 </resources>
